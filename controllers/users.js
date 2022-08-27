@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongoose').Types;
 const User = require('../models/user');
 const NotFound = require('../errors/not-found');
 const BadRequest = require('../errors/bad-request');
@@ -18,11 +19,17 @@ module.exports.createUser = (req, res, next) => {
   })
     .then((user) => res.send({
       data: {
+        _id: user._id,
         name: user.name,
         about: user.about,
         avatar: user.avatar,
       },
     }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequest(err.message);
+      }
+    })
     .catch(next);
 };
 
@@ -33,7 +40,13 @@ module.exports.getUsers = (_req, res, next) => {
 };
 
 module.exports.getUserById = (req, res, next) => {
-  User.findById(req.params.userId)
+  const { userId } = req.params;
+
+  if (!ObjectId.isValid(userId)) {
+    throw new BadRequest('Передан некорректный идентификатор');
+  }
+
+  User.findById(userId)
     .then((user) => {
       if (!user) {
         throw new NotFound('Пользователь с таким id не найден');

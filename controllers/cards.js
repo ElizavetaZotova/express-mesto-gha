@@ -1,3 +1,4 @@
+const { ObjectId } = require('mongoose').Types;
 const Card = require('../models/card');
 const NotFound = require('../errors/not-found');
 const BadRequest = require('../errors/bad-request');
@@ -21,6 +22,11 @@ module.exports.createCard = (req, res, next) => {
         link: card.link,
       },
     }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequest(err.message);
+      }
+    })
     .catch(next);
 };
 
@@ -29,7 +35,13 @@ module.exports.getCards = (_req, res, next) => Card.find({})
   .catch(next);
 
 module.exports.deleteCardById = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { cardId } = req.params.cardId;
+
+  if (!ObjectId.isValid(cardId)) {
+    throw new BadRequest('Передан некорректный идентификатор');
+  }
+
+  Card.findByIdAndRemove(cardId)
     .then((card) => {
       if (!card) {
         throw new NotFound('Карточка с таким id не найдена');
@@ -39,24 +51,40 @@ module.exports.deleteCardById = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $addToSet: { likes: req.user._id } },
-  { new: true },
-)
-  .orFail(() => {
-    throw new NotFound('Карточка с таким id не найдена');
-  })
-  .then((likes) => res.send({ data: likes }))
-  .catch(next);
+module.exports.likeCard = (req, res, next) => {
+  const { cardId } = req.params.cardId;
 
-module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
-  req.params.cardId,
-  { $pull: { likes: req.user._id } },
-  { new: true },
-)
-  .orFail(() => {
-    throw new NotFound('Карточка с таким id не найдена');
-  })
-  .then((likes) => res.send({ data: likes }))
-  .catch(next);
+  if (!ObjectId.isValid(cardId)) {
+    throw new BadRequest('Передан некорректный идентификатор');
+  }
+
+  Card.findByIdAndUpdate(
+    cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail(() => {
+      throw new NotFound('Карточка с таким id не найдена');
+    })
+    .then((likes) => res.send({ data: likes }))
+    .catch(next);
+};
+
+module.exports.dislikeCard = (req, res, next) => {
+  const { cardId } = req.params.cardId;
+
+  if (!ObjectId.isValid(cardId)) {
+    throw new BadRequest('Передан некорректный идентификатор');
+  }
+
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true },
+  )
+    .orFail(() => {
+      throw new NotFound('Карточка с таким id не найдена');
+    })
+    .then((likes) => res.send({ data: likes }))
+    .catch(next);
+};
