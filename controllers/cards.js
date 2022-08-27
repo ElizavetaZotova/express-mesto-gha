@@ -35,7 +35,7 @@ module.exports.getCards = (_req, res, next) => Card.find({})
   .catch(next);
 
 module.exports.deleteCardById = (req, res, next) => {
-  const { cardId } = req.params.cardId;
+  const { cardId } = req.params;
 
   if (!ObjectId.isValid(cardId)) {
     throw new BadRequest('Передан некорректный идентификатор');
@@ -52,7 +52,7 @@ module.exports.deleteCardById = (req, res, next) => {
 };
 
 module.exports.likeCard = (req, res, next) => {
-  const { cardId } = req.params.cardId;
+  const { cardId } = req.params;
 
   if (!ObjectId.isValid(cardId)) {
     throw new BadRequest('Передан некорректный идентификатор');
@@ -71,14 +71,14 @@ module.exports.likeCard = (req, res, next) => {
 };
 
 module.exports.dislikeCard = (req, res, next) => {
-  const { cardId } = req.params.cardId;
+  const { cardId } = req.params;
 
   if (!ObjectId.isValid(cardId)) {
     throw new BadRequest('Передан некорректный идентификатор');
   }
 
   Card.findByIdAndUpdate(
-    req.params.cardId,
+    cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
