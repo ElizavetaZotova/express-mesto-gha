@@ -40,7 +40,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((err, req, res, next) => {
   const { statusCode = ERR_DEFAULT, message } = err;
-console.log(err);
+
   res
     .status(statusCode)
     .send({
