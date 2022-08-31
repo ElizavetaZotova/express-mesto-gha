@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const morgan = require('morgan');
+// const morgan = require('morgan');
 const { errors } = require('celebrate');
 
 const { ERR_DEFAULT } = require('./const/errors');
@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cookieParser());
 
-app.use(morgan('tiny'));
+// app.use(morgan('tiny'));
 
 app.post('/signin', loginValidationSchema, login);
 app.post('/signup', createUserValidationSchema, createUser);
