@@ -1,6 +1,12 @@
 const { celebrate, Joi } = require('celebrate');
 const { linkRegExp } = require('../const/patterns');
 
+const idValidationSchema = celebrate({
+  params: Joi.object().keys({
+    _id: Joi.string().alphanum().length(24).hex(),
+  }),
+});
+
 const createUserValidationSchema = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
@@ -39,6 +45,7 @@ const updateAvatarValidationSchema = celebrate({
 });
 
 module.exports = {
+  idValidationSchema,
   createUserValidationSchema,
   cardValidationSchema,
   updateUserInfoValidationSchema,

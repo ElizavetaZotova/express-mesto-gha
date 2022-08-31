@@ -70,7 +70,7 @@ module.exports.getUsers = (_req, res, next) => {
 };
 
 module.exports.getUserById = (req, res, next) => {
-  const { userId } = req.params;
+  const { _id: userId } = req.params;
 
   if (!ObjectId.isValid(userId)) {
     throw new BadRequest('Передан некорректный идентификатор');
