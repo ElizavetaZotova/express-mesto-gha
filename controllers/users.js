@@ -1,10 +1,8 @@
-const { ObjectId } = require('mongoose').Types;
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const NotFound = require('../errors/not-found');
-const BadRequest = require('../errors/bad-request');
 const ConflictError = require('../errors/conflict-error');
 
 module.exports.createUser = (req, res, next) => {
@@ -72,10 +70,6 @@ module.exports.getUsers = (_req, res, next) => {
 module.exports.getUserById = (req, res, next) => {
   const { _id: userId } = req.params;
 
-  if (!ObjectId.isValid(userId)) {
-    throw new BadRequest('Передан некорректный идентификатор');
-  }
-
   User.findById(userId)
     .then((user) => {
       if (!user) {
@@ -88,10 +82,6 @@ module.exports.getUserById = (req, res, next) => {
 
 module.exports.getUserInfo = (req, res, next) => {
   const userId = req.user._id;
-
-  if (!ObjectId.isValid(userId)) {
-    throw new BadRequest('Передан некорректный идентификатор');
-  }
 
   User.findById(userId)
     .then((user) => {
@@ -106,10 +96,6 @@ module.exports.getUserInfo = (req, res, next) => {
 module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
-
-  if (!name || !about) {
-    throw new BadRequest('Переданы некорректные данные при обновлении профиля');
-  }
 
   User.findById(userId)
     .then((user) => {
@@ -127,10 +113,6 @@ module.exports.updateUser = (req, res, next) => {
 module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const userId = req.user._id;
-
-  if (!avatar) {
-    throw new BadRequest('Переданы некорректные данные при обновлении аватара');
-  }
 
   User.findById(userId)
     .then((user) => {

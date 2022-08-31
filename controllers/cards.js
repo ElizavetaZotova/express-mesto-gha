@@ -1,4 +1,3 @@
-const { ObjectId } = require('mongoose').Types;
 const Card = require('../models/card');
 const NotFound = require('../errors/not-found');
 const BadRequest = require('../errors/bad-request');
@@ -35,10 +34,6 @@ module.exports.deleteCardById = (req, res, next) => {
   const userId = req.user._id;
   const { _id: cardId } = req.params;
 
-  if (!ObjectId.isValid(cardId)) {
-    throw new BadRequest('Передан некорректный идентификатор');
-  }
-
   Card.findById(cardId)
     .orFail()
     .catch(() => {
@@ -58,10 +53,6 @@ module.exports.deleteCardById = (req, res, next) => {
 module.exports.likeCard = (req, res, next) => {
   const { _id: cardId } = req.params;
 
-  if (!ObjectId.isValid(cardId)) {
-    throw new BadRequest('Передан некорректный идентификатор');
-  }
-
   Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: req.user._id } },
@@ -76,10 +67,6 @@ module.exports.likeCard = (req, res, next) => {
 
 module.exports.dislikeCard = (req, res, next) => {
   const { _id: cardId } = req.params;
-
-  if (!ObjectId.isValid(cardId)) {
-    throw new BadRequest('Передан некорректный идентификатор');
-  }
 
   Card.findByIdAndUpdate(
     cardId,
