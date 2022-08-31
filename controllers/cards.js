@@ -2,6 +2,7 @@ const { ObjectId } = require('mongoose').Types;
 const Card = require('../models/card');
 const NotFound = require('../errors/not-found');
 const BadRequest = require('../errors/bad-request');
+const ForbiddenError = require('../errors/forbidden-error');
 
 module.exports.createCard = (req, res, next) => {
   const {
@@ -9,10 +10,6 @@ module.exports.createCard = (req, res, next) => {
     link,
   } = req.body;
   const owner = req.user._id;
-
-  if (!name || !link) {
-    throw new BadRequest('Переданы некорректные данные при создании карточки');
-  }
 
   Card.create({ name, link, owner })
     .then((card) => res.send({
@@ -35,19 +32,26 @@ module.exports.getCards = (_req, res, next) => Card.find({})
   .catch(next);
 
 module.exports.deleteCardById = (req, res, next) => {
+  const userId = req.user._id;
   const { cardId } = req.params;
 
   if (!ObjectId.isValid(cardId)) {
     throw new BadRequest('Передан некорректный идентификатор');
   }
 
-  Card.findByIdAndRemove(cardId)
-    .then((card) => {
-      if (!card) {
-        throw new NotFound('Карточка с таким id не найдена');
-      }
-      res.send({ data: card });
+  Card.findById(cardId)
+    .orFail()
+    .catch(() => {
+      throw new NotFound('Карточка с таким id не найдена');
     })
+    .then((card) => {
+      if (card.owner.toString() !== userId) {
+        throw new ForbiddenError('Недостаточно прав');
+      }
+
+      return Card.findByIdAndRemove(cardId);
+    })
+    .then((card) => res.send({ data: card }))
     .catch(next);
 };
 

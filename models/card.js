@@ -1,4 +1,5 @@
 const { Schema, model } = require('mongoose');
+const { linkRegExp } = require('../const/patterns');
 
 const cardSchema = new Schema({
   name: {
@@ -10,6 +11,12 @@ const cardSchema = new Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(link) {
+        return linkRegExp.test(link);
+      },
+      message: 'Неверная ссылка',
+    },
   },
   owner: {
     type: Schema.Types.ObjectId,
