@@ -28,8 +28,14 @@ app.use(morgan('tiny'));
 app.post('/signin', loginValidationSchema, login);
 app.post('/signup', createUserValidationSchema, createUser);
 
-app.use('/', auth, userRouter);
-app.use('/', auth, cardsRouter);
+app.get('/signout', (req, res) => {
+  res.clearCookie('jwt').send({ message: 'Выход' });
+});
+
+app.use(auth);
+
+app.use('/', userRouter);
+app.use('/', cardsRouter);
 
 app.use('*', () => {
   throw new NotFound('Запрашиваемый URL не существует');

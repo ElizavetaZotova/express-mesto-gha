@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFound = require('../errors/not-found');
 const ConflictError = require('../errors/conflict-error');
+const BadRequest = require('../errors/bad-request');
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -30,6 +31,12 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'MongoServerError' && err.code === 11000) {
         throw new ConflictError('Пользователь с таким email уже существует');
       }
+
+      if (err.name === 'ValidationError') {
+        throw new BadRequest('Переданы некорректные данные');
+      }
+
+      next(err);
     })
     .catch(next);
 };
@@ -97,16 +104,21 @@ module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   const userId = req.user._id;
 
-  User.findById(userId)
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         throw new NotFound('Пользователь с таким id не найден');
       }
 
-      return User.findByIdAndUpdate(userId, { name, about });
+      return res.send({ data: user });
     })
-    .then(() => User.findById(userId))
-    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequest('Переданы некорректные данные');
+      }
+
+      next(err);
+    })
     .catch(next);
 };
 
@@ -114,15 +126,20 @@ module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const userId = req.user._id;
 
-  User.findById(userId)
+  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
         throw new NotFound('Пользователь с таким id не найден');
       }
 
-      return User.findByIdAndUpdate(userId, { avatar });
+      return res.send({ data: user });
     })
-    .then(() => User.findById(userId))
-    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequest('Переданы некорректные данные');
+      }
+
+      next(err);
+    })
     .catch(next);
 };

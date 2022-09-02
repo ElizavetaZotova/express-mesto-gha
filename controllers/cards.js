@@ -22,6 +22,8 @@ module.exports.createCard = (req, res, next) => {
       if (err.name === 'ValidationError') {
         throw new BadRequest(err.message);
       }
+
+      next(err);
     })
     .catch(next);
 };
