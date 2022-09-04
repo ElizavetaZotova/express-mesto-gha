@@ -20,12 +20,11 @@ module.exports.createCard = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequest(err.message);
+        next(new BadRequest(err.message));
       }
 
       next(err);
-    })
-    .catch(next);
+    });
 };
 
 module.exports.getCards = (_req, res, next) => Card.find({})
